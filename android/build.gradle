@@ -1,11 +1,11 @@
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.8.22' // Version update kar dein
     repositories {
         google()
         mavenCentral()
     }
-
     dependencies {
+        classpath 'com.android.tools.build:gradle:7.4.2' // Version update karein
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
