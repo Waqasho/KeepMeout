@@ -1,6 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
-    <!-- Device Admin permissions -->
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
     <uses-permission android:name="android.permission.DEVICE_POWER" />
     
@@ -26,10 +25,10 @@
             </intent-filter>
         </activity>
         
-        <!-- Device Admin Receiver -->
         <receiver
             android:name=".DeviceAdminReceiver"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true"> 
             <meta-data
                 android:name="android.app.device_admin"
                 android:resource="@xml/device_admin" />
@@ -49,4 +48,3 @@
         </intent>
     </queries>
 </manifest>
-
