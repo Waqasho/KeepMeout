@@ -24,8 +24,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.waqas_lock"
-    // *** YEH LINE CHANGE KI GAYI HAI ***
-    compileSdkVersion 34 
+    // Yahan 34 set kiya gaya hai
+    compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -43,9 +43,8 @@ android {
 
     defaultConfig {
         applicationId "com.example.waqas_lock"
-        // *** YEH LINE BHI FIX KAR DI GAYI HAI ***
-        minSdkVersion 21 
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 21
+        targetSdkVersion 34 // Isay bhi 34 kar dein
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -62,4 +61,3 @@ flutter {
 }
 
 dependencies {}
-
