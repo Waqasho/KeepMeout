@@ -1,140 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waqas_lock/services/app_state.dart';
-import 'package:waqas_lock/services/schedule_service.dart';
-// Yeh import add karein
 import 'package:waqas_lock/services/device_admin_service.dart';
-
-//... (baaqi file ka code waisa hi rahega) ...
-
-// Sirf "_SettingsTab" class ko modify kiya gaya hai
-
-class _SettingsTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // Yeh Card Add Kiya Gaya Hai
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'App Permissions',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.admin_panel_settings),
-                  title: const Text('Activate Device Admin'),
-                  subtitle: const Text('Required for screen lock and uninstall protection'),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () async {
-                    bool isActive = await DeviceAdminService.isDeviceAdminActive();
-                    if (!isActive) {
-                      await DeviceAdminService.requestDeviceAdmin();
-                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please grant permission from system settings.'),
-                          backgroundColor: Colors.blue,
-                        ),
-                      );
-                    } else {
-                       ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Device Admin is already active.'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Admin PIN Section (Pehle se mojood card)
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Security Settings',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.lock),
-                  title: const Text('Change Admin PIN'),
-                  subtitle: const Text('Update the PIN used to access admin features'),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () => _showChangePinDialog(context),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // App Settings Section (Pehle se mojood card)
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'App Settings',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.notifications),
-                  title: const Text('Notifications'),
-                  subtitle: const Text('Enable notifications for schedule events'),
-                  trailing: Switch(
-                    value: true,
-                    onChanged: (value) {
-                      // TODO: Implement notification toggle
-                    },
-                  ),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.vibration),
-                  title: const Text('Vibration'),
-                  subtitle: const Text('Vibrate when timer expires'),
-                  trailing: Switch(
-                    value: true,
-                    onChanged: (value) {
-                      // TODO: Implement vibration toggle
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  //... (baaqi file ka code waisa hi rahega, jaise _showChangePinDialog method) ...
-  // Full admin_screen.dart file yahan poori nahi di, sirf _SettingsTab ka modified hissa diya hai.
-  // Aap bas _SettingsTab class ko upar diye gaye code se replace kar dein aur
-  // file ke shuru mein `device_admin_service.dart` ka import add kar lein.
-}
-
-// Full file ka baaqi structure waisa hi rahega.
-// For clarity, here is the rest of the file which remains unchanged.
-// The code below is NOT modified, just included so you have the full file to copy.
+import 'package:waqas_lock/services/schedule_service.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -142,7 +10,8 @@ class AdminScreen extends StatefulWidget {
   State<AdminScreen> createState() => _AdminScreenState();
 }
 
-class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStateMixin {
+class _AdminScreenState extends State<AdminScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   @override
   void initState() {
@@ -183,13 +52,264 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
         controller: _tabController,
         children: [
           _SchedulesTab(),
-          _SettingsTab(), // Yeh tab modify ho gaya hai
-          _InfoTab(),
+          _SettingsTab(),
+          _InfoTab(), // Yeh ab error nahi dega
         ],
       ),
     );
   }
 }
 
-// All other classes and methods like _SchedulesTab, _InfoTab, _showChangePinDialog, etc. remain the same as in your original file.
-// You only need to replace the _SettingsTab class and add the import at the top of the file.
+class _SchedulesTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Add Schedule Button
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          child: ElevatedButton.icon(
+            onPressed: () => _showAddScheduleDialog(context),
+            icon: const Icon(Icons.add),
+            label: const Text('Add New Schedule'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+          ),
+        ),
+
+        // Current Status
+        Consumer<ScheduleService>(
+          builder: (context, scheduleService, child) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: scheduleService.hasActiveSchedule
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.grey.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: scheduleService.hasActiveSchedule
+                      ? Colors.green.withOpacity(0.3)
+                      : Colors.grey.withOpacity(0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        scheduleService.hasActiveSchedule
+                            ? Icons.lock
+                            : Icons.lock_open,
+                        color:
+                            scheduleService.hasActiveSchedule ? Colors.green : Colors.grey,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        scheduleService.hasActiveSchedule
+                            ? 'Schedule Active'
+                            : 'No Active Schedule',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: scheduleService.hasActiveSchedule
+                              ? Colors.green
+                              : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (scheduleService.hasActiveSchedule) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Current: ${scheduleService.activeSchedule!.name}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Text(
+                    scheduleService.getNextScheduleInfo(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+
+        const SizedBox(height: 16),
+
+        // Schedules List
+        Expanded(
+          child: Consumer<ScheduleService>(
+            builder: (context, scheduleService, child) {
+              if (scheduleService.schedules.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.schedule_outlined,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No Schedules Yet',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Create your first schedule to get started with automatic screen locking',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () => _showAddScheduleDialog(context),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Create Schedule'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: scheduleService.schedules.length,
+                itemBuilder: (context, index) {
+                  final schedule = scheduleService.schedules[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header Row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      schedule.name,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: schedule.isEnabled
+                                            ? null
+                                            : Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Consumer<ScheduleService>(
+                                      builder: (context, scheduleService,
+                                          child) {
+                                        final isActive = scheduleService
+                                                .activeSchedule?.id ==
+                                            schedule.id;
+
+                                        return Row(
+                                          children: [
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: isActive
+                                                    ? Colors.green
+                                                    : schedule.isEnabled
+                                                        ? Theme.of(context)
+                                                            .primaryColor
+                                                        : Colors.grey,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                isActive
+                                                    ? 'ACTIVE NOW'
+                                                    : schedule.isEnabled
+                                                        ? 'ENABLED'
+                                                        : 'DISABLED',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch(
+                                value: schedule.isEnabled,
+                                onChanged: (_) =>
+                                    scheduleService.toggleSchedule(schedule.id),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Time Information
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: schedule.isEnabled
+                                  ? Theme.of(context)
+                                      .primaryColor
+                                      .withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.access_time,
+                                  color: schedule.isEnabled
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.grey,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${schedule.startTime.formatted} - ${schedule.endTime.formatted}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: schedule.isEnabled
+                                        ? null
+                                        : Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
